@@ -49,6 +49,7 @@ Config.Minigame = {
 
     -- Use a different minigame from another resource (must return true on success):
     -- e.g. { resource = 'ps-ui', export = 'Circle' }
+    -- to use ox_lib keep custom = { resource = '', export = '' }
     custom = {
         resource = 'bl_ui',
         export = 'CircleProgress',

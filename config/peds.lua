@@ -11,7 +11,7 @@ Config.Peds = {
     },
     sell = {
         model  = 'a_m_m_salton_04',
-        coords = vector4(-1685.13, -1072.31, 13.15, 140.0),
+        coords = vector4(-1686.75, -1072.51, 13.15, 50.61),
         blip   = { sprite = 78, color = 2, scale = 0.7, label = 'Fish Buyer' },
     },
     boat = {
