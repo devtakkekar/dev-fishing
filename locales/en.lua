@@ -15,6 +15,11 @@ Locales['en'] = {
     waiting_bite       = 'Waiting for a bite...',
     fish_got_away      = 'The fish got away...',
 
+    -- Hot streak
+    streak_counter     = 'Catch Streak: %d/%d',
+    streak_almost      = 'One more catch for boosted rare odds!',
+    streak_bonus       = 'Hot streak! That catch had boosted rare odds',
+
     -- Menus
     shop_title         = '🎣 Fishing Shop',
     sell_title         = '🐟 Fish Buyer',

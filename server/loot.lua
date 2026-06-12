@@ -29,13 +29,20 @@ local function weightedPick(entries)
 end
 
 --- Roll loot for a given fishing level. Tiers above the player's level never drop.
+--- When `boosted` is true (hot streak), tiers above common get their weight
+--- multiplied by Config.HotStreak.rareTierBoost, increasing rare odds.
 ---@param level number
+---@param boosted boolean|nil
 ---@return table|nil item
-function Loot.Roll(level)
+function Loot.Roll(level, boosted)
     local eligible = {}
-    for _, tier in ipairs(Config.LootTiers) do
+    for i, tier in ipairs(Config.LootTiers) do
         if level >= (tier.minLevel or 1) then
-            eligible[#eligible + 1] = tier
+            local weight = tier.weight or 0
+            if boosted and i > 1 then
+                weight = math.floor(weight * (Config.HotStreak.rareTierBoost or 1.0) + 0.5)
+            end
+            eligible[#eligible + 1] = { weight = weight, items = tier.items }
         end
     end
 

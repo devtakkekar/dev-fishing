@@ -27,6 +27,18 @@ Config.RequireWater  = true                        -- player must be facing open
 Config.MaxCastDrift  = 20.0                        -- anticheat: max metres a player may move between cast and catch
 
 -- ────────────────────────────────────────────────
+-- Hot streak (catch counter UI while the rod is equipped)
+-- Every catch fills the meter; the final catch of the streak rolls loot with
+-- boosted odds for rarer tiers, then the meter resets and the cycle repeats.
+-- Unequipping the rod resets the streak. /clearfshingui hides a stuck UI.
+-- ────────────────────────────────────────────────
+Config.HotStreak = {
+    enabled = true,
+    catches = 10,        -- catches needed to fill the meter (the Nth catch is boosted)
+    rareTierBoost = 3.0, -- weight multiplier applied to every tier above common on the boosted catch
+}
+
+-- ────────────────────────────────────────────────
 -- Reel-in minigame (runs when a fish bites; fail = fish gets away)
 -- ────────────────────────────────────────────────
 Config.Minigame = {
@@ -37,7 +49,13 @@ Config.Minigame = {
 
     -- Use a different minigame from another resource (must return true on success):
     -- e.g. { resource = 'ps-ui', export = 'Circle' }
-    custom = { resource = '', export = '' },
+    custom = {
+        resource = 'bl_ui',
+        export = 'CircleProgress',
+        colon = true,   -- Set to true if the export expects colon syntax (e.g. bl_ui:CircleProgress)
+        iterations = 3, -- Default iterations (amount of times to complete)
+        difficulty = 50 -- Default difficulty (1-100, affects circle speed)
+    },
 }
 
 -- ────────────────────────────────────────────────

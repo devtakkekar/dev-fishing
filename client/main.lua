@@ -10,6 +10,22 @@ local function notify(msg, type)
     lib.notify({ title = L('notify_title'), description = msg, type = type or 'inform' })
 end
 
+-- ────────────────────────────────────────────────
+-- Hot streak UI (right-side ox_lib text UI while the rod is equipped)
+-- ────────────────────────────────────────────────
+local function showStreakUI(count)
+    if not Config.HotStreak.enabled then return end
+    local target = Config.HotStreak.catches
+    lib.showTextUI(L('streak_counter', count, target), {
+        position = 'right-center',
+        icon = count >= target - 1 and 'fire' or 'fish',
+    })
+end
+
+local function hideStreakUI()
+    if lib.isTextUIOpen() then lib.hideTextUI() end
+end
+
 --- Probe the water in front of the player
 local function isNearWater()
     local ped = PlayerPedId()
@@ -41,6 +57,8 @@ local function unequipRod(silent)
     ClearPedTasks(PlayerPedId())
     if rodProp and DoesEntityExist(rodProp) then DeleteEntity(rodProp) end
     rodProp = nil
+    hideStreakUI()
+    TriggerServerEvent('dev-fishing:server:resetStreak')
     if not silent then notify(L('rod_packed')) end
 end
 
@@ -52,6 +70,8 @@ local function equipRod()
     equipped = true
     playIdleAnim()
     attachRod()
+    TriggerServerEvent('dev-fishing:server:resetStreak')
+    showStreakUI(0)
     notify(L('rod_equipped'))
 end
 
@@ -113,6 +133,22 @@ RegisterNetEvent('dev-fishing:client:useBait', function()
     if equipped then playIdleAnim() end
     casting = false
 end)
+
+-- Hot streak counter updates (server-authoritative)
+RegisterNetEvent('dev-fishing:client:updateStreak', function(count, boosted)
+    if not equipped or not Config.HotStreak.enabled then return end
+    showStreakUI(count)
+    if boosted then
+        notify(L('streak_bonus'), 'success')
+    elseif count == Config.HotStreak.catches - 1 then
+        notify(L('streak_almost'))
+    end
+end)
+
+-- Failsafe: hide the streak text UI if it ever gets stuck on screen
+RegisterCommand('clearfshingui', function()
+    if lib.isTextUIOpen() then lib.hideTextUI() end
+end, false)
 
 -- Server can force-stop (e.g. rod snapped)
 RegisterNetEvent('dev-fishing:client:stop', function()

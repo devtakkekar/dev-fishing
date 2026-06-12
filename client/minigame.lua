@@ -52,7 +52,23 @@ function Minigame.Run()
     -- 2. External resource export from config
     if cfg.custom and cfg.custom.resource ~= '' and cfg.custom.export ~= '' then
         local ok, result = pcall(function()
-            return exports[cfg.custom.resource][cfg.custom.export]()
+            local resource = exports[cfg.custom.resource]
+            local args = cfg.custom.args
+            local isColon = cfg.custom.colon or cfg.custom.resource == 'bl_ui'
+
+            if isColon then
+                if type(args) == 'table' then
+                    return resource[cfg.custom.export](resource, table.unpack(args))
+                else
+                    return resource[cfg.custom.export](resource, cfg.custom.iterations, cfg.custom.difficulty)
+                end
+            else
+                if type(args) == 'table' then
+                    return resource[cfg.custom.export](table.unpack(args))
+                else
+                    return resource[cfg.custom.export](cfg.custom.iterations, cfg.custom.difficulty)
+                end
+            end
         end)
         if not ok then
             print(('^1[dev-fishing]^7 minigame export %s:%s errored: %s'):format(cfg.custom.resource, cfg.custom.export, tostring(result)))

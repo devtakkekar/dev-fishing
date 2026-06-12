@@ -2,6 +2,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 
 local casts = {}     -- src -> { token, time }
 local lastCatch = {} -- src -> game timer of last catch
+local streaks = {}   -- src -> consecutive catches with the rod equipped (hot streak)
 
 local function notify(src, msg, type)
     TriggerClientEvent('ox_lib:notify', src, { title = L('notify_title'), description = msg, type = type or 'inform' })
@@ -73,12 +74,21 @@ RegisterNetEvent('dev-fishing:server:catch', function(token)
     local oldXP = FishingXP.Get(citizenid)
     local oldLevel = FishingXP.GetLevel(oldXP)
 
-    local loot = Loot.Roll(oldLevel.level)
+    -- Hot streak: the final catch of the streak rolls with boosted rare odds
+    local streak = (streaks[src] or 0) + 1
+    local boosted = Config.HotStreak.enabled and streak >= Config.HotStreak.catches
+
+    local loot = Loot.Roll(oldLevel.level, boosted)
     if not loot then return end
 
     if not Inventory.AddItem(src, loot.item, 1) then
         notify(src, L('pockets_full'), 'error')
         return
+    end
+
+    if Config.HotStreak.enabled then
+        streaks[src] = boosted and 0 or streak
+        TriggerClientEvent('dev-fishing:client:updateStreak', src, streaks[src], boosted)
     end
 
     notify(src, L('caught', loot.label), 'success')
@@ -138,6 +148,11 @@ RegisterNetEvent('dev-fishing:server:catch', function(token)
         notify(src, L('rod_snapped'), 'error')
         TriggerClientEvent('dev-fishing:client:stop', src)
     end
+end)
+
+-- Hot streak resets whenever the rod is unequipped client-side
+RegisterNetEvent('dev-fishing:server:resetStreak', function()
+    streaks[source] = nil
 end)
 
 -- ────────────────────────────────────────────────
@@ -464,6 +479,7 @@ AddEventHandler('playerDropped', function()
     local src = source
     casts[src] = nil
     lastCatch[src] = nil
+    streaks[src] = nil
     rentals[src] = nil -- abandoned rental: deposit forfeited
     Stats.ClearSession(src)
 end)
