@@ -174,6 +174,8 @@ local function rentBoat()
     local s = Config.Boat.spawn
     rentedBoat = CreateVehicle(model, s.x, s.y, s.z, s.w, true, false)
     SetVehicleHasBeenOwnedByPlayer(rentedBoat, true)
+    TriggerEvent('vehiclekeys:client:SetOwner', GetVehicleNumberPlateText(rentedBoat))
+    SetVehicleFuelLevel(rentedBoat, 100.0)
     SetModelAsNoLongerNeeded(model)
     notify(L('boat_rented', Config.Boat.deposit), 'success')
 end
